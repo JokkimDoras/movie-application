@@ -2,15 +2,22 @@ import { createBrowserRouter, RouterProvider, Outlet } from "react-router"
 import HomePage from "./pages/HomePage"
 import SearchPage from "./pages/SearchPage"
 import MovieNavbar from "./component/MovieNavBar"
+import DetailsPage from "./pages/DetialsPage"
+import GenreProvider from "./context/GenreContext"
 
 function Layout() {
-  return (
-    <>
-      <MovieNavbar/>
-      <Outlet />
-    </>
-  )
-}
+  
+    return (
+      <>
+        <MovieNavbar
+         
+        />
+  
+        <Outlet
+        />
+      </>
+    );
+  }
 
 const router = createBrowserRouter([
   {
@@ -25,10 +32,16 @@ const router = createBrowserRouter([
         path: "search",
         element: <SearchPage />,
       },
+      {
+        path:"search/:id",
+        element:<DetailsPage/>
+      }
     ],
   },
 ])
 
 export default function App() {
-  return <RouterProvider router={router} />
+  return <GenreProvider>
+          <RouterProvider router={router} />
+  </GenreProvider>
 }
