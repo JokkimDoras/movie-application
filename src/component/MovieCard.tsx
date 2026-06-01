@@ -21,7 +21,7 @@ export default function MovieCard({ movie }: MovieProps) {
     : "text-red-300 bg-red-950/60 border-red-700/50";
 
   return (
-    <Link to="/search" className="group block w-[160px] flex-shrink-0 focus:outline-none">
+    <Link to={`/search/${movie.id}`} className="group block w-[160px] flex-shrink-0 focus:outline-none">
       <div className="relative flex flex-col">
 
         {/* Poster */}

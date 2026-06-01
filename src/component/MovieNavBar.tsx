@@ -1,4 +1,6 @@
-import { useState,useRef,useEffect } from "react";
+import { useState,useRef,useEffect, useContext } from "react";
+import { Link } from "react-router";
+import { GenreContext } from "../context/GenreContext";
 
 const GENRES = ["All", "Action", "Drama", "Sci-Fi", "Horror", "Comedy", "Thriller", "Animation", "Documentary"];
 const NAV_LINKS = ["Discover", "Trending", "Watchlist", "Reviews"];
@@ -155,7 +157,7 @@ function GenreChip({ label, active, onClick }) {
 
 export default function MovieNavbar() {
   const [activeLink, setActiveLink] = useState<string>("Discover");
-  const [activeGenre, setActiveGenre] = useState<string>("All");
+  const { activeGenre,setActiveGenre} = useContext(GenreContext);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   const handleSearch = (query) => {
@@ -184,7 +186,7 @@ export default function MovieNavbar() {
         <nav className="nav-glow relative flex items-center justify-between h-16 px-7" style={{ background: "#0a0a0f", borderBottom: "0.5px solid rgba(255,255,255,0.08)" }}>
 
           {/* Logo */}
-          <div className="flex items-center gap-2.5 cursor-pointer select-none">
+          <Link to='/' className="flex items-center gap-2.5 cursor-pointer select-none">
             <div className="w-9 h-9 bg-[#e0633c] rounded-lg flex items-center justify-center flex-shrink-0">
               <FilmIcon />
             </div>
@@ -194,7 +196,7 @@ export default function MovieNavbar() {
                 Find your film
               </span>
             </div>
-          </div>
+          </Link>
 
           {/* Nav links */}
           <div className="flex items-center gap-1">

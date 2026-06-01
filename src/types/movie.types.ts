@@ -5,6 +5,7 @@ export type Movie = {
     poster_path: string
     author:string
     content:string
+    genre_ids:number[]
   };
   
 export type MovieResponse = {
