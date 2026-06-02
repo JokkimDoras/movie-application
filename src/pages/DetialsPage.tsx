@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import getMovies from "../api/getMovies";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import MovieDetailSkeleton from "../component/ui/Skeltons/MovieDetailsSkeleton";
 import type { MovieDetail } from "../types/movie.types";
+import { GenreContext } from "../context/GenreContext";
 
 
 
@@ -66,8 +67,19 @@ export default function MovieDetail() {
     const [loaded, setLoaded] = useState<boolean>(false);
     const [loading,setLoading] = useState<boolean>(true)
     const [movie, setMovie] = useState<MovieDetail | null>(null);
+    const { favouriteMovie,setFavouriteMovie,activeLink } = useContext(GenreContext)
+    
+    const navigate = useNavigate();
 
-    const {id} = useParams()
+    const {id} = useParams();
+ useEffect(() => {
+  if(activeLink === 'Trending'){
+    navigate('/')
+  }
+  
+
+ },[activeLink,navigate])
+
 
     useEffect(() => {
         async function fetchMovie() {
@@ -88,6 +100,12 @@ export default function MovieDetail() {
         fetchMovie();
       }, [id]);
       
+      const handleWatchList = (id:number) => {
+        const fav = movie.id === id
+        if(fav){
+          setFavouriteMovie([...favouriteMovie,movie])
+        }         
+      }
 
       
       useEffect(() => {
@@ -202,7 +220,7 @@ export default function MovieDetail() {
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                   Watch Trailer
                 </button>
-                <button className="flex items-center gap-2 px-6 py-3 rounded-full border border-white/15 hover:border-white/30 text-white/70 hover:text-white text-[13px] font-medium tracking-wide transition-all duration-200 bg-white/[0.04]">
+                <button onClick={() => handleWatchList(movie.id)} className="flex items-center gap-2 px-6 py-3 rounded-full border border-white/15 hover:border-white/30 text-white/70 hover:text-white text-[13px] font-medium tracking-wide transition-all duration-200 bg-white/[0.04]">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                   Watchlist
                 </button>

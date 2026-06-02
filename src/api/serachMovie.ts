@@ -10,5 +10,4 @@ export default async function searchMovie(query:string) {
 
    
 }
-// https://api.themoviedb.org/3/search/movie?=api_key=96525b58fad95f33b6786cec803d2857&query=coolie
 

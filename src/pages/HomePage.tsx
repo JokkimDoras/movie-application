@@ -1,13 +1,18 @@
-import { useContext } from "react";
+import { useContext,useEffect } from "react";
 import { MovieContext } from "../context/useMovies";
 import MovieCard from "../component/ui/MovieCard";
 import { GenreContext } from "../context/GenreContext";
+import WatchList from "./WatchList";
+import { useNavigate } from "react-router";
+
 
 export default function HomePage() {
+  const navigate = useNavigate()
 
     const{ activeGenre } = useContext(GenreContext)
     const { movies } = useContext(MovieContext)
-
+   const { activeLink} = useContext(GenreContext)
+   const { favouriteMovie} = useContext(GenreContext)
     const genreMap:Record<string,number> = {
     Horror: 27,
     Action: 28,
@@ -15,6 +20,18 @@ export default function HomePage() {
     Comedy: 35,
     "Sci-Fi": 878,
   };
+
+  // if(activeLink === 'Watchlist'){
+  //   navigate('watchlist')
+  // }
+
+  useEffect(() => {
+    if (activeLink === "Watchlist") {
+      navigate("/watchlist");
+    }
+  }, [activeLink, navigate]);
+  
+
   
   const filteredMovies =
     activeGenre === "All"
@@ -38,6 +55,8 @@ export default function HomePage() {
               </div>
             );
           }
+          
+          
 
     return <div className="flex flex-wrap gap-5">
     {filteredMovies.map(movie => <MovieCard key={movie.id} movie={movie} />)}
