@@ -1,5 +1,5 @@
-import { useState,useRef,useEffect, useContext } from "react";
-import { Link, Route, useNavigate } from "react-router";
+import {  useContext } from "react";
+import { Link, useNavigate } from "react-router";
 import { GenreContext } from "../context/GenreContext";
 
 const GENRES = ["All", "Action", "Drama", "Sci-Fi", "Horror", "Comedy", "Thriller", "Animation", "Documentary"];
