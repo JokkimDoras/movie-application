@@ -1,33 +1,10 @@
 import { useEffect, useState } from "react";
-import getMovies from "../api/getMovie";
+import getMovies from "../api/getMovies";
 import { useParams } from "react-router";
-import MovieDetailSkeleton from "../component/Skeltons/MovieDetailsSkeleton";
+import MovieDetailSkeleton from "../component/ui/Skeltons/MovieDetailsSkeleton";
+import type { MovieDetail } from "../types/movie.types";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-interface Genre { id: number; name: string; }
-interface ProductionCompany { id: number; logo_path: string | null; name: string; origin_country: string; }
 
-interface MovieDetail {
-  id: number;
-  title: string;
-  original_title: string;
-  tagline: string;
-  overview: string;
-  poster_path: string;
-  backdrop_path: string;
-  release_date: string;
-  runtime: number;
-  vote_average: number;
-  vote_count: number;
-  budget: number;
-  revenue: number;
-  status: string;
-  genres: Genre[];
-  production_companies: ProductionCompany[];
-  origin_country: string[];
-  original_language: string;
-  popularity: number;
-}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const fmt = (n: number) =>

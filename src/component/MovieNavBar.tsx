@@ -1,5 +1,5 @@
 import { useState,useRef,useEffect, useContext } from "react";
-import { Link } from "react-router";
+import { Link, Route, useNavigate } from "react-router";
 import { GenreContext } from "../context/GenreContext";
 
 const GENRES = ["All", "Action", "Drama", "Sci-Fi", "Horror", "Comedy", "Thriller", "Animation", "Documentary"];
@@ -65,55 +65,7 @@ interface SearchPillProps{
   onSearch:(query:string) => void
 }
 
-function SearchPill({ value, onChange, onSearch }:SearchPillProps) {
-  const [focused, setFocused] = useState<boolean>(false);
 
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key.toLowerCase() === "k") {
-        e.preventDefault(); // prevent browser search behavior
-
-        inputRef.current?.focus();
-        inputRef.current?.select(); // highlights existing text
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
-
-  return (
-    <div
-      onClick={() => document.getElementById("movie-search-input").focus()}
-      className={`flex items-center gap-2 rounded-full px-3 py-[7px] cursor-text min-w-[180px] transition-all duration-200
-        ${focused
-          ? "bg-[rgba(224,99,60,0.06)] border border-[#e0633c]"
-          : "bg-white/5 border border-white/[0.12] hover:border-[rgba(224,99,60,0.5)] hover:bg-white/[0.08]"
-        }`}
-    >
-      <SearchIcon focused={focused} />
-      <input
-        ref={inputRef}
-        id="movie-search-input"
-        value={value}
-        onChange={onChange}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        onKeyDown={(e) => e.key === "Enter" && value.trim() && onSearch(value.trim())}
-        placeholder="Search movies, shows…"
-        className="bg-transparent border-none outline-none text-[13px] text-white/85 w-full placeholder:text-white/[0.28] caret-[#e0633c] font-[inherit]"
-      />
-      <span className="text-[11px] text-white/25 bg-white/[0.07] rounded px-1.5 py-[1px] flex-shrink-0 border border-white/10">
-        ⌘K
-      </span>
-    </div>
-  );
-}
 
 function IconButton({ children, label, showDot }) {
   return (
@@ -158,11 +110,12 @@ function GenreChip({ label, active, onClick }) {
 export default function MovieNavbar() {
   const [activeLink, setActiveLink] = useState<string>("Discover");
   const { activeGenre,setActiveGenre} = useContext(GenreContext);
-  const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const handleSearch = (query) => {
-    alert(`Searching for: "${query}"`);
-  };
+  const navigate = useNavigate()
+  const handleClick = () => {
+    navigate('search')
+  }
+
 
 
   return (
@@ -212,12 +165,12 @@ export default function MovieNavbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-2.5">
-            <SearchPill
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onSearch={handleSearch}
-            />
-            <div className="w-px h-[22px] mx-0.5 bg-white/[0.08]" />
+          <div
+  className="cursor-pointer rounded-2xl border border-white/20 bg-white/5 px-4 py-2 text-white shadow-lg backdrop-blur-xl transition-all hover:bg-white/10"
+  onClick={handleClick}
+>
+  Search Movie
+</div>        <div className="w-px h-[22px] mx-0.5 bg-white/[0.08]" />
             <IconButton label="Notifications" showDot>
               <BellIcon />
             </IconButton>

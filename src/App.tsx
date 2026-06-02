@@ -1,9 +1,9 @@
 import { createBrowserRouter, RouterProvider, Outlet } from "react-router"
 import HomePage from "./pages/HomePage"
-import SearchPage from "./pages/SearchPage"
 import MovieNavbar from "./component/MovieNavBar"
 import DetailsPage from "./pages/DetialsPage"
 import GenreProvider from "./context/GenreContext"
+import SearchPage from "./pages/SearchPage"
 
 function Layout() {
   
@@ -29,8 +29,8 @@ const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: "search",
-        element: <SearchPage />,
+        path:'search',
+        element:<SearchPage/>
       },
       {
         path:"search/:id",
