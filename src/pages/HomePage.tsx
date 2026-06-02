@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { MovieContext } from "../context/useMovies";
-import MovieCard from "../component/MovieCard";
+import MovieCard from "../component/ui/MovieCard";
 import { GenreContext } from "../context/GenreContext";
 
 export default function HomePage() {
