@@ -1,8 +1,4 @@
-import type { MovieDetail } from "../types/movie.types";
 
-const URL = "https://api.themoviedb.org/3";
-const API_KEY = import.meta.env.VITE_API_KEY
-console.log(API_KEY)
 interface SearchRespose {
     results:{
     }[]
