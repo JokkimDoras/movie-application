@@ -1,4 +1,4 @@
-import { useContext ,useEffect} from "react"
+import { useContext } from "react"
 import { GenreContext } from "../context/GenreContext"
 import MovieCard from "../component/ui/MovieCard"
 import { useNavigate } from "react-router"
@@ -7,17 +7,7 @@ import Button from "../component/ui/Button";
 
 export default function WatchList() {
     const navigate = useNavigate();
-    const { favouriteMovie,activeLink,setActiveLink } = useContext(GenreContext) 
-    
-
-    
-      useEffect(() => {
-        if (activeLink === "Trending") {
-          navigate("/");
-        }
-      }, [activeLink, navigate]);
-
-     
+    const { favouriteMovie } = useContext(GenreContext)!
 
       if(favouriteMovie.length === 0) {
         return  (
@@ -31,14 +21,24 @@ export default function WatchList() {
               <p className="mt-3 text-white/40">
                 No movies were found for this WatchList.
               </p>
-              <Button onClick={() => setActiveLink('Trending')} className="m-5 bg-orange-500/80 cursor-pointer">Add Watchlist</Button>
+              <Button onClick={() => navigate("/")} className="m-5 bg-orange-500/80 cursor-pointer">Browse movies</Button>
             </div>
           );
       }
 
     return <div className="flex flex-wrap gap-5">
-        {favouriteMovie.map((movie) => {
-            return <MovieCard movie={movie} key={movie.id}/>
-        })}
+        {favouriteMovie.map((movie) => (
+            <MovieCard
+              key={movie.id}
+              movie={{
+                id: movie.id,
+                title: movie.title,
+                poster_path: movie.poster_path,
+                vote_average: movie.vote_average,
+                author: "",
+                content: "",
+              }}
+            />
+        ))}
     </div>
 }

@@ -1,8 +1,11 @@
 import { useContext, useEffect, useState } from "react";
 import getMovies from "../api/getMovies";
+import getSimilarMovies from "../api/getSimilarMovies";
+import getMovieTrailerKey from "../api/getMovieVideos";
 import { useParams } from "react-router";
 import MovieDetailSkeleton from "../component/ui/Skeltons/MovieDetailsSkeleton";
-import type { MovieDetail } from "../types/movie.types";
+import MovieCard from "../component/ui/MovieCard";
+import type { TMDBMovie, MovieDetail } from "../types/movie.types";
 import { GenreContext } from "../context/GenreContext";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -65,15 +68,23 @@ export default function MovieDetail() {
   const [loaded, setLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [movie, setMovie] = useState<MovieDetail | null>(null);
-  const { favouriteMovie, setFavouriteMovie } = useContext(GenreContext);
+  const [similar, setSimilar] = useState<TMDBMovie[]>([]);
+  const [showTrailer, setShowTrailer] = useState(false);
+  const [trailerKey, setTrailerKey] = useState<string | null>(null);
+  const [trailerLoading, setTrailerLoading] = useState(false);
+  const [noTrailer, setNoTrailer] = useState(false);
+  const { favouriteMovie, setFavouriteMovie } = useContext(GenreContext)!;
 
   const { id } = useParams();
+  const inWatchlist = movie ? favouriteMovie.some((m) => m.id === movie.id) : false;
 
   useEffect(() => {
+    if (!id) return;
+    const movieId = id;
     async function fetchMovie() {
       try {
         setLoading(true);
-        const { data } = await getMovies(id);
+        const { data } = await getMovies(movieId);
         setMovie(data);
       } catch (err) {
         console.error(err);
@@ -85,15 +96,38 @@ export default function MovieDetail() {
   }, [id]);
 
   useEffect(() => {
+    if (!id) return;
+    getSimilarMovies(id).then(setSimilar).catch(() => setSimilar([]));
+  }, [id]);
+
+  useEffect(() => {
     const t = setTimeout(() => setLoaded(true), 80);
     return () => clearTimeout(t);
   }, []);
 
-  const handleWatchList = (id: number) => {
+  const handleWatchList = () => {
     if (!movie) return;
-    const alreadyAdded = favouriteMovie.some((m) => m.id === id);
-    if (!alreadyAdded) {
+    if (inWatchlist) {
+      setFavouriteMovie(favouriteMovie.filter((m) => m.id !== movie.id));
+    } else {
       setFavouriteMovie([...favouriteMovie, movie]);
+    }
+  };
+
+  const handleTrailer = async () => {
+    if (!id) return;
+    setTrailerLoading(true);
+    setNoTrailer(false);
+    try {
+      const key = await getMovieTrailerKey(id);
+      if (key) {
+        setTrailerKey(key);
+        setShowTrailer(true);
+      } else {
+        setNoTrailer(true);
+      }
+    } finally {
+      setTrailerLoading(false);
     }
   };
 
@@ -192,20 +226,31 @@ export default function MovieDetail() {
                 </div>
               </div>
 
-              <div className={`fade-up delay-4 ${loaded ? "in" : ""} flex gap-3`}>
-                <button className="flex items-center gap-2 px-6 py-3 rounded-full bg-[#e0633c] hover:bg-[#c8552e] text-white text-[13px] font-semibold tracking-wide transition-colors duration-200 shadow-[0_4px_24px_rgba(224,99,60,0.4)]">
+              <div className={`fade-up delay-4 ${loaded ? "in" : ""} flex flex-wrap items-center gap-3`}>
+                <button
+                  onClick={handleTrailer}
+                  disabled={trailerLoading}
+                  className="flex items-center gap-2 px-6 py-3 rounded-full bg-[#e0633c] hover:bg-[#c8552e] disabled:opacity-60 text-white text-[13px] font-semibold tracking-wide transition-colors duration-200 shadow-[0_4px_24px_rgba(224,99,60,0.4)]"
+                >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
-                  Watch Trailer
+                  {trailerLoading ? "Loading…" : "Watch Trailer"}
                 </button>
                 <button
-                  onClick={() => handleWatchList(movie.id)}
-                  className="flex items-center gap-2 px-6 py-3 rounded-full border border-white/15 hover:border-white/30 text-white/70 hover:text-white text-[13px] font-medium tracking-wide transition-all duration-200 bg-white/[0.04]"
+                  onClick={handleWatchList}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-full border text-[13px] font-medium tracking-wide transition-all duration-200
+                    ${inWatchlist
+                      ? "border-[#e0633c]/50 text-[#e0633c] bg-[#e0633c]/10"
+                      : "border-white/15 hover:border-white/30 text-white/70 hover:text-white bg-white/[0.04]"
+                    }`}
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill={inWatchlist ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                     <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
                   </svg>
-                  {favouriteMovie.some((m) => m.id === movie.id) ? "Added ✓" : "Watchlist"}
+                  {inWatchlist ? "In Watchlist" : "Add to Watchlist"}
                 </button>
+                {noTrailer && (
+                  <span className="text-[12px] text-white/40">No trailer available for this film.</span>
+                )}
               </div>
             </div>
           </div>
@@ -247,8 +292,58 @@ export default function MovieDetail() {
             </div>
           </div>
 
+          {similar.length > 0 && (
+            <div className={`fade-up delay-5 ${loaded ? "in" : ""} mt-14`}>
+              <h3 className="text-[10px] uppercase tracking-[3px] text-white/30 font-medium mb-5">
+                More Like This
+              </h3>
+              <div className="flex flex-wrap gap-5 pb-2">
+                {similar.slice(0, 6).map((m) => (
+                  <MovieCard
+                    key={m.id}
+                    movie={{
+                      id: m.id,
+                      title: m.title,
+                      poster_path: m.poster_path,
+                      vote_average: m.vote_average,
+                      author: "",
+                      content: "",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
+
+      {showTrailer && trailerKey && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-sm px-4"
+          onClick={() => setShowTrailer(false)}
+        >
+          <div
+            className="relative w-full max-w-4xl aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowTrailer(false)}
+              className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/70 border border-white/20 text-white/80 hover:text-white flex items-center justify-center"
+              aria-label="Close trailer"
+            >
+              ✕
+            </button>
+            <iframe
+              title={`${movie.title} trailer`}
+              src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }

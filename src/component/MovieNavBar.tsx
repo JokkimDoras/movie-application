@@ -23,20 +23,6 @@ function FilmIcon() {
   );
 }
 
-function SearchIcon({ focused }: { focused: boolean }) {
-  return (
-    <svg
-      width="15" height="15" viewBox="0 0 24 24" fill="none"
-      stroke={focused ? "#e0633c" : "rgba(255,255,255,0.35)"}
-      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-      className="flex-shrink-0"
-    >
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  );
-}
-
 function BellIcon() {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -91,9 +77,12 @@ function GenreChip({ label, active, onClick }: { label: string; active: boolean;
 }
 
 export default function MovieNavbar() {
-  const { activeGenre, setActiveGenre } = useContext(GenreContext);
+  const { activeGenre, setActiveGenre, favouriteMovie } = useContext(GenreContext)!;
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const activeLink = useActiveLink();
+  const watchlistCount = favouriteMovie?.length ?? 0;
+  const isHome = pathname === "/";
 
   return (
     <>
@@ -108,12 +97,25 @@ export default function MovieNavbar() {
           height: 1px;
           background: linear-gradient(90deg, transparent 0%, rgba(224,99,60,0.6) 30%, rgba(224,99,60,0.6) 70%, transparent 100%);
         }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
       `}</style>
 
-      <div className="sticky top-0 z-50 navbar-root rounded-xl overflow-hidden border border-white/[0.06]" style={{ background: "#0d0d15" }}>
+      <div
+        className={`navbar-root z-50 overflow-hidden transition-all duration-300 ${
+          isHome
+            ? "fixed top-0 left-0 right-0 border-0 bg-gradient-to-b from-black/90 via-black/50 to-transparent"
+            : "sticky top-0 rounded-xl border border-white/[0.06]"
+        }`}
+        style={isHome ? undefined : { background: "#0d0d15" }}
+      >
 
         {/* Main navbar */}
-        <nav className="nav-glow relative flex items-center justify-between h-16 px-7" style={{ background: "#0a0a0f", borderBottom: "0.5px solid rgba(255,255,255,0.08)" }}>
+        <nav
+          className={`nav-glow relative flex items-center justify-between h-16 px-7 ${
+            isHome ? "bg-transparent" : ""
+          }`}
+          style={isHome ? undefined : { background: "#0a0a0f", borderBottom: "0.5px solid rgba(255,255,255,0.08)" }}
+        >
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 cursor-pointer select-none">
@@ -131,12 +133,18 @@ export default function MovieNavbar() {
           {/* Nav links */}
           <div className="flex items-center gap-1">
             {NAV_LINKS.map(({ label, path }) => (
-              <NavLink
-                key={label}
-                label={label}
-                active={activeLink === label}
-                onClick={() => navigate(path)}
-              />
+              <span key={label} className="relative">
+                <NavLink
+                  label={label}
+                  active={activeLink === label}
+                  onClick={() => navigate(path)}
+                />
+                {label === "Watchlist" && watchlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#e0633c] text-[10px] font-semibold text-white flex items-center justify-center">
+                    {watchlistCount}
+                  </span>
+                )}
+              </span>
             ))}
           </div>
 
@@ -156,7 +164,11 @@ export default function MovieNavbar() {
         </nav>
 
         {/* Genre filter row */}
-        <div className="flex items-center flex-wrap gap-2.5 px-7 py-5">
+        <div
+          className={`flex items-center flex-wrap gap-2.5 px-7 py-5 ${
+            isHome ? "bg-gradient-to-b from-black/40 to-transparent" : ""
+          }`}
+        >
           {GENRES.map((genre) => (
             <GenreChip
               key={genre}
