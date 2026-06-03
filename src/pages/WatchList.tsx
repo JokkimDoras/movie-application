@@ -7,7 +7,7 @@ import Button from "../component/ui/Button";
 
 export default function WatchList() {
     const navigate = useNavigate();
-    const { favouriteMovie,activeLink } = useContext(GenreContext) 
+    const { favouriteMovie,activeLink,setActiveLink } = useContext(GenreContext) 
     
 
     
@@ -16,6 +16,8 @@ export default function WatchList() {
           navigate("/");
         }
       }, [activeLink, navigate]);
+
+     
 
       if(favouriteMovie.length === 0) {
         return  (
@@ -29,7 +31,7 @@ export default function WatchList() {
               <p className="mt-3 text-white/40">
                 No movies were found for this WatchList.
               </p>
-              <Button onClick={() => navigate('/search')} className="m-5 bg-orange-500/80 cursor-pointer">Add Watchlist</Button>
+              <Button onClick={() => setActiveLink('Trending')} className="m-5 bg-orange-500/80 cursor-pointer">Add Watchlist</Button>
             </div>
           );
       }

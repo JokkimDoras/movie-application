@@ -1,9 +1,19 @@
-import {  useContext } from "react";
-import { Link, useNavigate } from "react-router";
+import { useContext } from "react";
+import { Link, useNavigate, useLocation } from "react-router";
 import { GenreContext } from "../context/GenreContext";
 
 const GENRES = ["All", "Action", "Drama", "Sci-Fi", "Horror", "Comedy", "Thriller", "Animation", "Documentary"];
-const NAV_LINKS = ["Trending", "Watchlist",];
+
+const NAV_LINKS = [
+  { label: "Trending",  path: "/" },
+  { label: "Watchlist", path: "/watchlist" },
+];
+
+function useActiveLink() {
+  const { pathname } = useLocation();
+  const match = NAV_LINKS.find((link) => link.path === pathname);
+  return match?.label ?? "";
+}
 
 function FilmIcon() {
   return (
@@ -12,10 +22,8 @@ function FilmIcon() {
     </svg>
   );
 }
-interface SearchIconProps{
-  focused:boolean
-}
-function SearchIcon({ focused }:SearchIconProps) {
+
+function SearchIcon({ focused }: { focused: boolean }) {
   return (
     <svg
       width="15" height="15" viewBox="0 0 24 24" fill="none"
@@ -38,13 +46,7 @@ function BellIcon() {
   );
 }
 
-interface NavLinkProps{
-  label:string
-  active:boolean
-  onClick:() => void;
-}
-
-function NavLink({ label, active, onClick }:NavLinkProps) {
+function NavLink({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
     <span
       onClick={onClick}
@@ -59,15 +61,7 @@ function NavLink({ label, active, onClick }:NavLinkProps) {
   );
 }
 
-interface SearchPillProps{
-  value:string
-  onChange:(e) => void
-  onSearch:(query:string) => void
-}
-
-
-
-function IconButton({ children, label, showDot }) {
+function IconButton({ children, label, showDot }: { children: React.ReactNode; label: string; showDot?: boolean }) {
   return (
     <button
       aria-label={label}
@@ -81,18 +75,7 @@ function IconButton({ children, label, showDot }) {
   );
 }
 
-// function Avatar({ initial }) {
-//   return (
-//     <div
-//       className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-medium text-white cursor-pointer border-[1.5px] border-[rgba(224,99,60,0.4)] hover:border-[#e0633c] transition-colors duration-200 select-none"
-//       style={{ background: "linear-gradient(135deg, #e0633c, #c04020)" }}
-//     >
-//       {initial}
-//     </div>
-//   );
-// }
-
-function GenreChip({ label, active, onClick }) {
+function GenreChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
     <span
       onClick={onClick}
@@ -108,15 +91,9 @@ function GenreChip({ label, active, onClick }) {
 }
 
 export default function MovieNavbar() {
-  const { activeLink,setActiveLink} = useContext(GenreContext);
-  const { activeGenre,setActiveGenre} = useContext(GenreContext);
-
-  const navigate = useNavigate()
-  const handleClick = () => {
-    navigate('search')
-  }
-
-
+  const { activeGenre, setActiveGenre } = useContext(GenreContext);
+  const navigate = useNavigate();
+  const activeLink = useActiveLink();
 
   return (
     <>
@@ -133,13 +110,13 @@ export default function MovieNavbar() {
         }
       `}</style>
 
-      <div className=" sticky top-0 z-50 navbar-root rounded-xl overflow-hidden border border-white/[0.06]" style={{ background: "#0d0d15" }}>
+      <div className="sticky top-0 z-50 navbar-root rounded-xl overflow-hidden border border-white/[0.06]" style={{ background: "#0d0d15" }}>
 
         {/* Main navbar */}
         <nav className="nav-glow relative flex items-center justify-between h-16 px-7" style={{ background: "#0a0a0f", borderBottom: "0.5px solid rgba(255,255,255,0.08)" }}>
 
           {/* Logo */}
-          <Link to='/' className="flex items-center gap-2.5 cursor-pointer select-none">
+          <Link to="/" className="flex items-center gap-2.5 cursor-pointer select-none">
             <div className="w-9 h-9 bg-[#e0633c] rounded-lg flex items-center justify-center flex-shrink-0">
               <FilmIcon />
             </div>
@@ -153,24 +130,25 @@ export default function MovieNavbar() {
 
           {/* Nav links */}
           <div className="flex items-center gap-1">
-            {NAV_LINKS.map((link) => (
+            {NAV_LINKS.map(({ label, path }) => (
               <NavLink
-                key={link}
-                label={link}
-                active={activeLink === link}
-                onClick={() => setActiveLink(link)}
+                key={label}
+                label={label}
+                active={activeLink === label}
+                onClick={() => navigate(path)}
               />
             ))}
           </div>
 
           {/* Right side */}
           <div className="flex items-center gap-2.5">
-          <div
-  className="cursor-pointer rounded-2xl border border-white/20 bg-white/5 px-4 py-2 text-white shadow-lg backdrop-blur-xl transition-all hover:bg-white/10"
-  onClick={handleClick}
->
-  Search Movie
-</div>        <div className="w-px h-[22px] mx-0.5 bg-white/[0.08]" />
+            <div
+              className="cursor-pointer rounded-2xl border border-white/20 bg-white/5 px-4 py-2 text-white shadow-lg backdrop-blur-xl transition-all hover:bg-white/10"
+              onClick={() => navigate("/search")}
+            >
+              Search Movie
+            </div>
+            <div className="w-px h-[22px] mx-0.5 bg-white/[0.08]" />
             <IconButton label="Notifications" showDot>
               <BellIcon />
             </IconButton>
@@ -178,10 +156,7 @@ export default function MovieNavbar() {
         </nav>
 
         {/* Genre filter row */}
-        <div 
-        className=
-        "flex items-center flex-wrap gap-2.5 px-7 py-5"
-        >
+        <div className="flex items-center flex-wrap gap-2.5 px-7 py-5">
           {GENRES.map((genre) => (
             <GenreChip
               key={genre}
