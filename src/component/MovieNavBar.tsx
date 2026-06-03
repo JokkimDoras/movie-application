@@ -1,9 +1,9 @@
-import { useState,useRef,useEffect, useContext } from "react";
-import { Link, Route, useNavigate } from "react-router";
+import {  useContext } from "react";
+import { Link, useNavigate } from "react-router";
 import { GenreContext } from "../context/GenreContext";
 
 const GENRES = ["All", "Action", "Drama", "Sci-Fi", "Horror", "Comedy", "Thriller", "Animation", "Documentary"];
-const NAV_LINKS = ["Discover", "Trending", "Watchlist", "Reviews"];
+const NAV_LINKS = ["Trending", "Watchlist",];
 
 function FilmIcon() {
   return (
@@ -108,7 +108,7 @@ function GenreChip({ label, active, onClick }) {
 }
 
 export default function MovieNavbar() {
-  const [activeLink, setActiveLink] = useState<string>("Discover");
+  const { activeLink,setActiveLink} = useContext(GenreContext);
   const { activeGenre,setActiveGenre} = useContext(GenreContext);
 
   const navigate = useNavigate()

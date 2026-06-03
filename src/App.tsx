@@ -4,6 +4,7 @@ import MovieNavbar from "./component/MovieNavBar"
 import DetailsPage from "./pages/DetialsPage"
 import GenreProvider from "./context/GenreContext"
 import SearchPage from "./pages/SearchPage"
+import WatchList from "./pages/WatchList"
 
 function Layout() {
   
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
       {
         path:"search/:id",
         element:<DetailsPage/>
+      },
+      {
+        path:'watchlist',
+        element:<WatchList/>
       }
     ],
   },
