@@ -7,10 +7,22 @@ export type Movie = {
     content:string
     genre_ids:number[]
   };
+
+/** TMDB list item — used for Netflix-style rows & hero */
+export type TMDBMovie = {
+  id: number;
+  title: string;
+  overview: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  vote_average: number;
+  release_date: string;
+  genre_ids: number[];
+};
   
 export type MovieResponse = {
     page: number
-    results:Movie[]
+    results: TMDBMovie[]
     total_pages: number
     total_results: number
   }

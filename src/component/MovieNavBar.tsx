@@ -1,30 +1,24 @@
-import {  useContext } from "react";
-import { Link, useNavigate } from "react-router";
+import { useContext } from "react";
+import { Link, useNavigate, useLocation } from "react-router";
 import { GenreContext } from "../context/GenreContext";
 
 const GENRES = ["All", "Action", "Drama", "Sci-Fi", "Horror", "Comedy", "Thriller", "Animation", "Documentary"];
-const NAV_LINKS = ["Trending", "Watchlist",];
+
+const NAV_LINKS = [
+  { label: "Trending",  path: "/" },
+  { label: "Watchlist", path: "/watchlist" },
+];
+
+function useActiveLink() {
+  const { pathname } = useLocation();
+  const match = NAV_LINKS.find((link) => link.path === pathname);
+  return match?.label ?? "";
+}
 
 function FilmIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
       <path d="M18 3H6C4.343 3 3 4.343 3 6v12c0 1.657 1.343 3 3 3h12c1.657 0 3-1.343 3-3V6c0-1.657-1.343-3-3-3zM7 7h2v2H7V7zm0 4h2v2H7v-2zm0 4h2v2H7v-2zm4-8h6v2h-6V7zm0 4h6v2h-6v-2zm0 4h4v2h-4v-2z" />
-    </svg>
-  );
-}
-interface SearchIconProps{
-  focused:boolean
-}
-function SearchIcon({ focused }:SearchIconProps) {
-  return (
-    <svg
-      width="15" height="15" viewBox="0 0 24 24" fill="none"
-      stroke={focused ? "#e0633c" : "rgba(255,255,255,0.35)"}
-      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-      className="flex-shrink-0"
-    >
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
   );
 }
@@ -38,13 +32,7 @@ function BellIcon() {
   );
 }
 
-interface NavLinkProps{
-  label:string
-  active:boolean
-  onClick:() => void;
-}
-
-function NavLink({ label, active, onClick }:NavLinkProps) {
+function NavLink({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
     <span
       onClick={onClick}
@@ -59,15 +47,7 @@ function NavLink({ label, active, onClick }:NavLinkProps) {
   );
 }
 
-interface SearchPillProps{
-  value:string
-  onChange:(e) => void
-  onSearch:(query:string) => void
-}
-
-
-
-function IconButton({ children, label, showDot }) {
+function IconButton({ children, label, showDot }: { children: React.ReactNode; label: string; showDot?: boolean }) {
   return (
     <button
       aria-label={label}
@@ -81,18 +61,7 @@ function IconButton({ children, label, showDot }) {
   );
 }
 
-// function Avatar({ initial }) {
-//   return (
-//     <div
-//       className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-medium text-white cursor-pointer border-[1.5px] border-[rgba(224,99,60,0.4)] hover:border-[#e0633c] transition-colors duration-200 select-none"
-//       style={{ background: "linear-gradient(135deg, #e0633c, #c04020)" }}
-//     >
-//       {initial}
-//     </div>
-//   );
-// }
-
-function GenreChip({ label, active, onClick }) {
+function GenreChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
     <span
       onClick={onClick}
@@ -108,15 +77,12 @@ function GenreChip({ label, active, onClick }) {
 }
 
 export default function MovieNavbar() {
-  const { activeLink,setActiveLink} = useContext(GenreContext);
-  const { activeGenre,setActiveGenre} = useContext(GenreContext);
-
-  const navigate = useNavigate()
-  const handleClick = () => {
-    navigate('search')
-  }
-
-
+  const { activeGenre, setActiveGenre, favouriteMovie } = useContext(GenreContext)!;
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const activeLink = useActiveLink();
+  const watchlistCount = favouriteMovie?.length ?? 0;
+  const isHome = pathname === "/";
 
   return (
     <>
@@ -131,15 +97,28 @@ export default function MovieNavbar() {
           height: 1px;
           background: linear-gradient(90deg, transparent 0%, rgba(224,99,60,0.6) 30%, rgba(224,99,60,0.6) 70%, transparent 100%);
         }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
       `}</style>
 
-      <div className=" sticky top-0 z-50 navbar-root rounded-xl overflow-hidden border border-white/[0.06]" style={{ background: "#0d0d15" }}>
+      <div
+        className={`navbar-root z-50 overflow-hidden transition-all duration-300 ${
+          isHome
+            ? "fixed top-0 left-0 right-0 border-0 bg-gradient-to-b from-black/90 via-black/50 to-transparent"
+            : "sticky top-0 rounded-xl border border-white/[0.06]"
+        }`}
+        style={isHome ? undefined : { background: "#0d0d15" }}
+      >
 
         {/* Main navbar */}
-        <nav className="nav-glow relative flex items-center justify-between h-16 px-7" style={{ background: "#0a0a0f", borderBottom: "0.5px solid rgba(255,255,255,0.08)" }}>
+        <nav
+          className={`nav-glow relative flex items-center justify-between h-16 px-7 ${
+            isHome ? "bg-transparent" : ""
+          }`}
+          style={isHome ? undefined : { background: "#0a0a0f", borderBottom: "0.5px solid rgba(255,255,255,0.08)" }}
+        >
 
           {/* Logo */}
-          <Link to='/' className="flex items-center gap-2.5 cursor-pointer select-none">
+          <Link to="/" className="flex items-center gap-2.5 cursor-pointer select-none">
             <div className="w-9 h-9 bg-[#e0633c] rounded-lg flex items-center justify-center flex-shrink-0">
               <FilmIcon />
             </div>
@@ -153,24 +132,31 @@ export default function MovieNavbar() {
 
           {/* Nav links */}
           <div className="flex items-center gap-1">
-            {NAV_LINKS.map((link) => (
-              <NavLink
-                key={link}
-                label={link}
-                active={activeLink === link}
-                onClick={() => setActiveLink(link)}
-              />
+            {NAV_LINKS.map(({ label, path }) => (
+              <span key={label} className="relative">
+                <NavLink
+                  label={label}
+                  active={activeLink === label}
+                  onClick={() => navigate(path)}
+                />
+                {label === "Watchlist" && watchlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#e0633c] text-[10px] font-semibold text-white flex items-center justify-center">
+                    {watchlistCount}
+                  </span>
+                )}
+              </span>
             ))}
           </div>
 
           {/* Right side */}
           <div className="flex items-center gap-2.5">
-          <div
-  className="cursor-pointer rounded-2xl border border-white/20 bg-white/5 px-4 py-2 text-white shadow-lg backdrop-blur-xl transition-all hover:bg-white/10"
-  onClick={handleClick}
->
-  Search Movie
-</div>        <div className="w-px h-[22px] mx-0.5 bg-white/[0.08]" />
+            <div
+              className="cursor-pointer rounded-2xl border border-white/20 bg-white/5 px-4 py-2 text-white shadow-lg backdrop-blur-xl transition-all hover:bg-white/10"
+              onClick={() => navigate("/search")}
+            >
+              Search Movie
+            </div>
+            <div className="w-px h-[22px] mx-0.5 bg-white/[0.08]" />
             <IconButton label="Notifications" showDot>
               <BellIcon />
             </IconButton>
@@ -178,9 +164,10 @@ export default function MovieNavbar() {
         </nav>
 
         {/* Genre filter row */}
-        <div 
-        className=
-        "flex items-center flex-wrap gap-2.5 px-7 py-5"
+        <div
+          className={`flex items-center flex-wrap gap-2.5 px-7 py-5 ${
+            isHome ? "bg-gradient-to-b from-black/40 to-transparent" : ""
+          }`}
         >
           {GENRES.map((genre) => (
             <GenreChip

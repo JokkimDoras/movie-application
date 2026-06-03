@@ -1,64 +1,208 @@
-import { useContext,useEffect } from "react";
-import { MovieContext } from "../context/useMovies";
-import MovieCard from "../component/ui/MovieCard";
+import { useContext, useEffect, useState, useMemo } from "react";
 import { GenreContext } from "../context/GenreContext";
-import WatchList from "./WatchList";
-import { useNavigate } from "react-router";
+import type { TMDBMovie } from "../types/movie.types";
+import getMovies from "../api/getMovies";
+import {
+  fetchTrending,
+  fetchPopular,
+  fetchTopRated,
+  fetchUpcoming,
+  fetchNowPlaying,
+  fetchByGenre,
+} from "../api/movieCatalog";
+import HeroBanner from "../component/netflix/HeroBanner";
+import MovieRow from "../component/netflix/MovieRow";
 
+const GENRE_MAP: Record<string, number> = {
+  Horror: 27,
+  Action: 28,
+  Drama: 18,
+  Comedy: 35,
+  "Sci-Fi": 878,
+  Thriller: 53,
+  Animation: 16,
+  Documentary: 99,
+};
+
+type Catalog = {
+  trending: TMDBMovie[];
+  popular: TMDBMovie[];
+  topRated: TMDBMovie[];
+  upcoming: TMDBMovie[];
+  nowPlaying: TMDBMovie[];
+  genre: TMDBMovie[];
+};
+
+function HomeSkeleton() {
+  return (
+    <div className="bg-[#080810] min-h-screen">
+      <div className="h-[72vh] min-h-[480px] bg-white/[0.04] animate-pulse" />
+      <div className="px-10 -mt-20 space-y-10">
+        {[1, 2, 3].map((i) => (
+          <div key={i}>
+            <div className="h-6 w-40 bg-white/10 rounded mb-4 animate-pulse" />
+            <div className="flex gap-2">
+              {Array.from({ length: 8 }).map((_, j) => (
+                <div
+                  key={j}
+                  className="w-[180px] aspect-[2/3] rounded-md bg-white/[0.06] animate-pulse flex-shrink-0"
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function HomePage() {
-  const navigate = useNavigate()
+  const { activeGenre, favouriteMovie, setFavouriteMovie } =
+    useContext(GenreContext)!;
+  const [loading, setLoading] = useState(true);
+  const [catalog, setCatalog] = useState<Catalog>({
+    trending: [],
+    popular: [],
+    topRated: [],
+    upcoming: [],
+    nowPlaying: [],
+    genre: [],
+  });
 
-    const{ activeGenre } = useContext(GenreContext)
-    const { movies } = useContext(MovieContext)
-   const { activeLink} = useContext(GenreContext)
-   const { favouriteMovie} = useContext(GenreContext)
-    const genreMap:Record<string,number> = {
-    Horror: 27,
-    Action: 28,
-    Drama: 18,
-    Comedy: 35,
-    "Sci-Fi": 878,
-  };
-
-  // if(activeLink === 'Watchlist'){
-  //   navigate('watchlist')
-  // }
+  const isBrowseAll = activeGenre === "All";
 
   useEffect(() => {
-    if (activeLink === "Watchlist") {
-      navigate("/watchlist");
-    }
-  }, [activeLink, navigate]);
-  
+    let cancelled = false;
+    setLoading(true);
 
-  
-  const filteredMovies =
-    activeGenre === "All"
-      ? movies
-      : movies.filter(movie =>
-          movie.genre_ids.includes(genreMap[activeGenre as keyof typeof genreMap])
-        );
-
-        if (filteredMovies.length === 0) {
-            return (
-              <div className="flex flex-col items-center justify-center min-h-[70vh]">
-                <h1 className="text-6xl font-bold text-white/10 mb-4">Oops!</h1>
-          
-                <h2 className="text-2xl font-semibold text-white">
-                  Nothing to watch here
-                </h2>
-          
-                <p className="mt-3 text-white/40">
-                  No movies were found for this genre.
-                </p>
-              </div>
-            );
+    async function load() {
+      try {
+        if (isBrowseAll) {
+          const [trending, popular, topRated, upcoming, nowPlaying] =
+            await Promise.all([
+              fetchTrending(),
+              fetchPopular(),
+              fetchTopRated(),
+              fetchUpcoming(),
+              fetchNowPlaying(),
+            ]);
+          if (!cancelled) {
+            setCatalog({
+              trending,
+              popular,
+              topRated,
+              upcoming,
+              nowPlaying,
+              genre: [],
+            });
           }
-          
-          
+        } else {
+          const genreId = GENRE_MAP[activeGenre];
+          const genre = genreId ? await fetchByGenre(genreId) : [];
+          if (!cancelled) {
+            setCatalog({
+              trending: genre,
+              popular: [],
+              topRated: [],
+              upcoming: [],
+              nowPlaying: [],
+              genre,
+            });
+          }
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
 
-    return <div className="flex flex-wrap gap-5">
-    {filteredMovies.map(movie => <MovieCard key={movie.id} movie={movie} />)}
-  </div>
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeGenre, isBrowseAll]);
+
+  const heroMovies = useMemo(() => {
+    const list = isBrowseAll ? catalog.trending : catalog.genre;
+    return list.slice(0, 5);
+  }, [catalog, isBrowseAll]);
+
+  const myListAsTMDB: TMDBMovie[] = useMemo(
+    () =>
+      favouriteMovie.map((m) => ({
+        id: m.id,
+        title: m.title,
+        overview: m.overview,
+        poster_path: m.poster_path,
+        backdrop_path: m.backdrop_path,
+        vote_average: m.vote_average,
+        release_date: m.release_date,
+        genre_ids: m.genres?.map((g) => g.id) ?? [],
+      })),
+    [favouriteMovie]
+  );
+
+  const inList = (id: number) => favouriteMovie.some((m) => m.id === id);
+
+  const handleAddToList = async (movie: TMDBMovie) => {
+    if (inList(movie.id)) {
+      setFavouriteMovie(favouriteMovie.filter((m) => m.id !== movie.id));
+      return;
+    }
+    try {
+      const { data } = await getMovies(String(movie.id));
+      setFavouriteMovie([...favouriteMovie, data]);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  if (loading) return <HomeSkeleton />;
+
+  const hasContent = isBrowseAll
+    ? catalog.trending.length > 0
+    : catalog.genre.length > 0;
+
+  if (!hasContent) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[70vh] bg-[#080810] text-white">
+        <h1 className="text-6xl font-bold text-white/10 mb-4">Oops!</h1>
+        <h2 className="text-2xl font-semibold">Nothing to watch here</h2>
+        <p className="mt-3 text-white/40">No movies found for {activeGenre}.</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet"
+      />
+      <div className="bg-[#080810] min-h-screen text-white -mt-0 netflix-home">
+        <HeroBanner
+          movies={heroMovies}
+          onAddToList={handleAddToList}
+          inList={inList}
+        />
+
+        <div className="relative z-10 -mt-24 pb-16 space-y-2">
+          {myListAsTMDB.length > 0 && (
+            <MovieRow title="My List" movies={myListAsTMDB} />
+          )}
+
+          {isBrowseAll ? (
+            <>
+              <MovieRow title="Trending Now" movies={catalog.trending} />
+              <MovieRow title="Popular on Flickr" movies={catalog.popular} />
+              <MovieRow title="Top Rated" movies={catalog.topRated} />
+              <MovieRow title="Now Playing" movies={catalog.nowPlaying} />
+              <MovieRow title="Coming Soon" movies={catalog.upcoming} />
+            </>
+          ) : (
+            <MovieRow title={`${activeGenre} Movies`} movies={catalog.genre} />
+          )}
+        </div>
+      </div>
+    </>
+  );
 }

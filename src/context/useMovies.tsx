@@ -1,4 +1,4 @@
-import { useState,useEffect, createContext } from "react";
+import { useState,useEffect, createContext, type ReactNode } from "react";
 import type { MovieResponse } from "../types/movie.types";
 type MovieListType = MovieResponse['results'];
 
@@ -6,7 +6,7 @@ export const MovieContext = createContext<{ movies: MovieListType } | null>(null
 
 const api_key:string = import.meta.env.VITE_API_KEY
 
-export default function MovieProvider ({ children }) {
+export default function MovieProvider ({ children }: { children: ReactNode }) {
     const [movies,setMovies] = useState<MovieListType>([])
 
     useEffect(() => {

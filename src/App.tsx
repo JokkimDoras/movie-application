@@ -7,15 +7,10 @@ import SearchPage from "./pages/SearchPage"
 import WatchList from "./pages/WatchList"
 
 function Layout() {
-  
     return (
       <>
-        <MovieNavbar
-         
-        />
-  
-        <Outlet
-        />
+        <MovieNavbar />
+        <Outlet />
       </>
     );
   }
