@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import MovieCard from "../component/ui/MovieCard";
-import "@testing-library/jest-dom";
+import { test,expect } from "vitest";
+import "@testing-library/jest-dom/vitest";
 
 test("renders movie title", () => {
   const movie = {
