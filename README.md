@@ -1,73 +1,122 @@
-# React + TypeScript + Vite
+# Movie App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern movie discovery application built with React, TypeScript, and Vite. Browse trending movies, search for your favorite titles, view detailed movie information, watch trailers, and manage your favorite movies.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+* Search movies using the TMDB API
+* View trending and popular movies
+* Detailed movie information page
+* Watch movie trailers
+* Add and remove favorite movies
+* Persistent favorites using Local Storage
+* Responsive design for desktop and mobile
+* Loading and error states
+* Component testing with Vitest and React Testing Library
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Frontend
 
-## Expanding the ESLint configuration
+* React
+* TypeScript
+* Vite
+* React Router
+* Tailwind CSS
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Testing
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+* Vitest
+* React Testing Library
+* JSDOM
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### API
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+* TMDB (The Movie Database) API
+
+## Installation
+
+Clone the repository:
+
+```bash
+git clone <repository-url>
+cd movie-app
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Install dependencies:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+pnpm install
+```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Create a `.env` file:
+
+```env
+VITE_TMDB_API_KEY=your_api_key
+```
+
+Start the development server:
+
+```bash
+pnpm dev
+```
+
+## Running Tests
+
+Run all tests:
+
+```bash
+pnpm test
+```
+
+## Project Structure
+
+```text
+src/
+├── component/
+├── pages/
+├── hooks/
+├── api/
+├── types/
+├── assets/
+└── tests/
+```
+
+## Key Features Implemented
+
+### Movie Search
+
+Search movies by title and view instant results.
+
+### Movie Details
+
+View detailed information about a movie including ratings, overview, and poster.
+
+### Trailer Support
+
+Watch movie trailers directly from the application.
+
+### Favorites
+
+Save favorite movies and access them later.
+
+### Testing
+
+Includes component tests using Vitest and React Testing Library.
+
+## Future Improvements
+
+* Advanced filtering
+* Genre-based recommendations
+* Infinite scrolling
+* User authentication
+* Watchlist support
+* Dark/Light theme toggle
+* End-to-end testing with Playwright
+
+## Author
+
+@me
+
+```
 ```
