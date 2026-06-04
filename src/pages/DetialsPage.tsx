@@ -114,7 +114,7 @@ export default function MovieDetail() {
     }
   };
 
-  const handleTrailer = async (e:KeyboardEvent) => {
+  const handleTrailer = async (e:any) => {
     console.log(e);
    
     if (!id) return;
