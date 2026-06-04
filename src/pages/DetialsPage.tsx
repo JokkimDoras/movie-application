@@ -114,8 +114,11 @@ export default function MovieDetail() {
     }
   };
 
-  const handleTrailer = async () => {
+  const handleTrailer = async (e:KeyboardEvent) => {
+    console.log(e);
+   
     if (!id) return;
+
     setTrailerLoading(true);
     setNoTrailer(false);
     try {
@@ -123,6 +126,10 @@ export default function MovieDetail() {
       if (key) {
         setTrailerKey(key);
         setShowTrailer(true);
+        if(e.ctrlKey || e.altKey ){
+          window.open(`https://www.youtube.com/watch?v=${key}`,
+            "_blank")
+        }
       } else {
         setNoTrailer(true);
       }
@@ -228,7 +235,7 @@ export default function MovieDetail() {
 
               <div className={`fade-up delay-4 ${loaded ? "in" : ""} flex flex-wrap items-center gap-3`}>
                 <button
-                  onClick={handleTrailer}
+                  onClick={(e) => handleTrailer(e)}
                   disabled={trailerLoading}
                   className="flex items-center gap-2 px-6 py-3 rounded-full bg-[#e0633c] hover:bg-[#c8552e] disabled:opacity-60 text-white text-[13px] font-semibold tracking-wide transition-colors duration-200 shadow-[0_4px_24px_rgba(224,99,60,0.4)]"
                 >
