@@ -311,7 +311,7 @@ export default function MovieDetail() {
                     movie={{
                       id: m.id,
                       title: m.title,
-                      poster_path: m.poster_path,
+                      poster_path: m.poster_path??'',
                       vote_average: m.vote_average,
                       author: "",
                       content: "",
