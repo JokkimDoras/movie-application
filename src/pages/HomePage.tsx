@@ -37,15 +37,17 @@ function HomeSkeleton() {
   return (
     <div className="bg-[#080810] min-h-screen">
       <div className="h-[72vh] min-h-[480px] bg-white/[0.04] animate-pulse" />
-      <div className="px-10 -mt-20 space-y-10">
+
+      <div className="px-4 md:px-10 -mt-8 md:-mt-20 space-y-10">
         {[1, 2, 3].map((i) => (
           <div key={i}>
             <div className="h-6 w-40 bg-white/10 rounded mb-4 animate-pulse" />
-            <div className="flex gap-2">
+
+            <div className="flex gap-2 overflow-hidden">
               {Array.from({ length: 8 }).map((_, j) => (
                 <div
                   key={j}
-                  className="w-[180px] aspect-[2/3] rounded-md bg-white/[0.06] animate-pulse flex-shrink-0"
+                  className="w-[150px] md:w-[180px] aspect-[2/3] rounded-md bg-white/[0.06] animate-pulse flex-shrink-0"
                 />
               ))}
             </div>
@@ -59,7 +61,9 @@ function HomeSkeleton() {
 export default function HomePage() {
   const { activeGenre, favouriteMovie, setFavouriteMovie } =
     useContext(GenreContext)!;
+
   const [loading, setLoading] = useState(true);
+
   const [catalog, setCatalog] = useState<Catalog>({
     trending: [],
     popular: [],
@@ -78,27 +82,39 @@ export default function HomePage() {
     async function load() {
       try {
         if (isBrowseAll) {
-          const [trending, popular, topRated, upcoming, nowPlaying] =
-            await Promise.all([
-              fetchTrending(),
-              fetchPopular(),
-              fetchTopRated(),
-              fetchUpcoming(),
-              fetchNowPlaying(),
-            ]);
-          if (!cancelled) {
-            setCatalog({
-              trending,
-              popular,
-              topRated,
-              upcoming,
-              nowPlaying,
-              genre: [],
-            });
-          }
+          const results = await Promise.allSettled([
+            fetchTrending(),
+            fetchPopular(),
+            fetchTopRated(),
+            fetchUpcoming(),
+            fetchNowPlaying(),
+          ]);
+
+          if (cancelled) return;
+
+          setCatalog({
+            trending:
+              results[0].status === "fulfilled" ? results[0].value : [],
+            popular:
+              results[1].status === "fulfilled" ? results[1].value : [],
+            topRated:
+              results[2].status === "fulfilled" ? results[2].value : [],
+            upcoming:
+              results[3].status === "fulfilled" ? results[3].value : [],
+            nowPlaying:
+              results[4].status === "fulfilled" ? results[4].value : [],
+            genre: [],
+          });
+
+          results.forEach((result, index) => {
+            if (result.status === "rejected") {
+              console.error("Movie API failed:", index, result.reason);
+            }
+          });
         } else {
           const genreId = GENRE_MAP[activeGenre];
           const genre = genreId ? await fetchByGenre(genreId) : [];
+
           if (!cancelled) {
             setCatalog({
               trending: genre,
@@ -110,12 +126,26 @@ export default function HomePage() {
             });
           }
         }
+      } catch (error) {
+        console.error("Home page movie load failed:", error);
+
+        if (!cancelled) {
+          setCatalog({
+            trending: [],
+            popular: [],
+            topRated: [],
+            upcoming: [],
+            nowPlaying: [],
+            genre: [],
+          });
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
 
     load();
+
     return () => {
       cancelled = true;
     };
@@ -148,6 +178,7 @@ export default function HomePage() {
       setFavouriteMovie(favouriteMovie.filter((m) => m.id !== movie.id));
       return;
     }
+
     try {
       const { data } = await getMovies(String(movie.id));
       setFavouriteMovie([...favouriteMovie, data]);
@@ -159,15 +190,23 @@ export default function HomePage() {
   if (loading) return <HomeSkeleton />;
 
   const hasContent = isBrowseAll
-    ? catalog.trending.length > 0
+    ? catalog.trending.length > 0 ||
+      catalog.popular.length > 0 ||
+      catalog.topRated.length > 0 ||
+      catalog.upcoming.length > 0 ||
+      catalog.nowPlaying.length > 0
     : catalog.genre.length > 0;
 
   if (!hasContent) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] bg-[#080810] text-white">
         <h1 className="text-6xl font-bold text-white/10 mb-4">Oops!</h1>
+
         <h2 className="text-2xl font-semibold">Nothing to watch here</h2>
-        <p className="mt-3 text-white/40">No movies found for {activeGenre}.</p>
+
+        <p className="mt-3 text-white/40">
+          No movies found for {activeGenre}.
+        </p>
       </div>
     );
   }
@@ -178,6 +217,7 @@ export default function HomePage() {
         href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap"
         rel="stylesheet"
       />
+
       <div className="bg-[#080810] min-h-screen text-white -mt-0 netflix-home">
         <HeroBanner
           movies={heroMovies}
@@ -185,19 +225,19 @@ export default function HomePage() {
           inList={inList}
         />
 
-        <div className="relative z-10 -mt-24 pb-16 space-y-2">
+        <div className="relative z-10 -mt-8 md:-mt-24 pb-16 space-y-2">
           {myListAsTMDB.length > 0 && (
             <MovieRow title="My List" movies={myListAsTMDB} />
           )}
 
           {isBrowseAll ? (
-            <>
+            <div>
               <MovieRow title="Trending Now" movies={catalog.trending} />
               <MovieRow title="Popular on Flickr" movies={catalog.popular} />
               <MovieRow title="Top Rated" movies={catalog.topRated} />
               <MovieRow title="Now Playing" movies={catalog.nowPlaying} />
               <MovieRow title="Coming Soon" movies={catalog.upcoming} />
-            </>
+            </div>
           ) : (
             <MovieRow title={`${activeGenre} Movies`} movies={catalog.genre} />
           )}

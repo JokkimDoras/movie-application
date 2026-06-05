@@ -20,7 +20,7 @@ export default function MovieRow({
   };
 
   return (
-    <section className="relative group/row mb-10 px-4 md:px-10">
+    <section className="relative group/row mb-10 px-4 md:px-10 ">
       <h2 className="text-lg md:text-xl font-semibold text-white mb-3 tracking-wide">
         {title}
       </h2>
