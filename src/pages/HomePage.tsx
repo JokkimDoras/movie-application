@@ -59,6 +59,10 @@ function HomeSkeleton() {
 }
 
 export default function HomePage() {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [showBanner, setShowBanner] = useState(false);
+  const [visible, setVisible] = useState(false);
+
   const { activeGenre, favouriteMovie, setFavouriteMovie } =
     useContext(GenreContext)!;
 
@@ -74,6 +78,17 @@ export default function HomePage() {
   });
 
   const isBrowseAll = activeGenre === "All";
+
+  useEffect(() => {
+   if(!isOnline){
+    setShowBanner(true);
+    setTimeout(() => setVisible(true),10)
+   }else if(isOnline && showBanner){
+    setVisible(true);
+    setTimeout(() => setVisible(false), 2000);
+    setTimeout(() => setShowBanner(false), 2500);
+   }
+  },[isOnline])
 
   useEffect(() => {
     let cancelled = false;
@@ -242,6 +257,17 @@ export default function HomePage() {
             <MovieRow title={`${activeGenre} Movies`} movies={catalog.genre} />
           )}
         </div>
+        {showBanner && (
+  <div className={`fixed top-8 right-6 transition-all duration-500 ease-in-out
+    ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-24'}
+    ${isOnline ? 'bg-green-600' : 'bg-red-500'}
+    px-4 h-10 rounded-lg text-white text-sm font-medium
+    flex items-center gap-2 shadow-lg z-50`}
+  >
+    <span>{isOnline ? '✅' : '⚠️'}</span>
+    {isOnline ? 'Back online!' : 'No internet'}
+  </div>
+)}
       </div>
     </>
   );
