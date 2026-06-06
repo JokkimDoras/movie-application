@@ -38,7 +38,7 @@ export interface ProductionCompany { id: number; logo_path: string | null; name:
     original_title: string;
     tagline: string;
     overview: string;
-    poster_path: string;
+    poster_path: string | null;
     backdrop_path: string;
     release_date: string;
     runtime: number;
