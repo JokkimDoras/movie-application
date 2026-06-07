@@ -143,6 +143,8 @@ export default function MovieDetail() {
 
   const imgBase = "https://image.tmdb.org/t/p";
 
+  console.log(movie.poster_path)
+
   return (
     <>
       <link
@@ -165,15 +167,17 @@ export default function MovieDetail() {
 
         {/* ── Backdrop hero ── */}
         <div className="relative w-full h-[520px] overflow-hidden">
-          <img
-            src={`${imgBase}/w1280${movie.backdrop_path}`}
-            alt=""
-            className="w-full h-full object-cover object-top"
-            style={{
-              transition: "transform 6s ease",
-              transform: loaded ? "scale(1)" : "scale(1.04)",
-            }}
-          />
+        {movie.backdrop_path ? (
+  <img
+    src={`${imgBase}/w1280${movie.backdrop_path}`}
+    alt=""
+    className="w-full h-full object-cover object-top"
+  />
+) : (
+  <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
+    No Image
+  </div>
+)}
           <div className="absolute inset-0 bg-gradient-to-r from-[#080810]/95 via-[#080810]/60 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#080810] via-transparent to-[#080810]/30" />
           <div className="absolute top-6 right-6 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/50 border border-white/10 backdrop-blur-sm">
@@ -187,14 +191,18 @@ export default function MovieDetail() {
           <div className="flex gap-10 items-end">
 
             {/* Poster */}
-            <div className={`fade-up ${loaded ? "in" : ""} flex-shrink-0 hidden md:block`}>
-              <div className="w-[210px] rounded-2xl overflow-hidden border border-white/10 shadow-[0_24px_64px_rgba(0,0,0,0.8)]">
+            <div className={`fade-up ${loaded ? "in" : ""} flex-shrink-0 hidden md:block w-[210px] `}>
+            { movie.poster_path? <div className="w-[210px] rounded-2xl overflow-hidden border border-white/10 shadow-[0_24px_64px_rgba(0,0,0,0.8)]">
                 <img
                   src={`${imgBase}/w342${movie.poster_path}`}
                   alt={movie.title}
                   className="w-full aspect-[2/3] object-cover"
                 />
-              </div>
+              </div>:(
+                <div className="w-full h-full rounded aspect-[2/3] bg-zinc-800 flex items-center justify-center text-white/50">
+                  No Poster
+                </div>
+              )}
             </div>
 
             {/* Text block */}
